@@ -48,7 +48,6 @@ export default async function Classement() {
   const { data: matches } = await supabase
     .from('matches')
     .select('*')
-    .eq('hidden', false)
     .not('bracket_round', 'is', null)
     .order('match_number', { ascending: true })
 
