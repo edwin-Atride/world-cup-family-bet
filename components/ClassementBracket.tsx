@@ -29,76 +29,29 @@ export function ClassementBracket({ matches }: { matches: Match[] }) {
   const rightSf = sf.slice(1, 2)
 
   return (
-    <div className="w-full overflow-x-auto pb-10">
-      <div className="min-w-[1900px] px-4">
-        <div className="mb-6 text-center">
-          <h3 className="text-2xl font-black text-white">
-            🏆 Tableau final
-          </h3>
-          <p className="text-sm text-white/60">
-            Mise à jour automatique avec les scores validés par l’admin.
-          </p>
-        </div>
+    <div className="w-full pb-10">
+      <div className="mb-6 text-center">
+        <h3 className="text-2xl font-black text-white">
+          🏆 Tableau final
+        </h3>
 
-        <div className="grid grid-cols-[260px_230px_230px_220px_260px_220px_230px_230px_260px] gap-8 items-start">
-          <BracketColumn
-            title="16èmes"
-            matches={leftR32}
-            gap="gap-4"
-            marginTop="mt-0"
-          />
+        <p className="text-sm text-white/60">
+          Mise à jour automatique avec les scores validés par l’admin.
+        </p>
+      </div>
 
-          <BracketColumn
-            title="8èmes"
-            matches={leftR16}
-            gap="gap-16"
-            marginTop="mt-16"
-          />
+      <div className="mx-auto grid w-full grid-cols-[1.15fr_1fr_0.95fr_0.85fr_1.15fr_0.85fr_0.95fr_1fr_1.15fr] gap-2 xl:gap-3 items-start">
+        <BracketColumn title="16èmes" matches={leftR32} top="mt-0" gap="gap-2" />
+        <BracketColumn title="8èmes" matches={leftR16} top="mt-10" gap="gap-8" />
+        <BracketColumn title="Quarts" matches={leftQf} top="mt-28" gap="gap-24" />
+        <BracketColumn title="Demi" matches={leftSf} top="mt-56" gap="gap-0" />
 
-          <BracketColumn
-            title="Quarts"
-            matches={leftQf}
-            gap="gap-40"
-            marginTop="mt-40"
-          />
+        <FinalCard match={final} />
 
-          <BracketColumn
-            title="Demi"
-            matches={leftSf}
-            gap="gap-0"
-            marginTop="mt-[330px]"
-          />
-
-          <FinalCard match={final} />
-
-          <BracketColumn
-            title="Demi"
-            matches={rightSf}
-            gap="gap-0"
-            marginTop="mt-[330px]"
-          />
-
-          <BracketColumn
-            title="Quarts"
-            matches={rightQf}
-            gap="gap-40"
-            marginTop="mt-40"
-          />
-
-          <BracketColumn
-            title="8èmes"
-            matches={rightR16}
-            gap="gap-16"
-            marginTop="mt-16"
-          />
-
-          <BracketColumn
-            title="16èmes"
-            matches={rightR32}
-            gap="gap-4"
-            marginTop="mt-0"
-          />
-        </div>
+        <BracketColumn title="Demi" matches={rightSf} top="mt-56" gap="gap-0" />
+        <BracketColumn title="Quarts" matches={rightQf} top="mt-28" gap="gap-24" />
+        <BracketColumn title="8èmes" matches={rightR16} top="mt-10" gap="gap-8" />
+        <BracketColumn title="16èmes" matches={rightR32} top="mt-0" gap="gap-2" />
       </div>
     </div>
   )
@@ -107,28 +60,26 @@ export function ClassementBracket({ matches }: { matches: Match[] }) {
 function BracketColumn({
   title,
   matches,
+  top,
   gap,
-  marginTop,
 }: {
   title: string
   matches: Match[]
+  top: string
   gap: string
-  marginTop: string
 }) {
   return (
-    <section>
-      <h4 className="mb-4 text-center text-sm font-black uppercase text-white">
+    <section className="min-w-0">
+      <h4 className="mb-3 text-center text-[10px] xl:text-xs font-black uppercase text-white">
         {title}
       </h4>
 
-      <div className={`${marginTop} grid ${gap}`}>
+      <div className={`${top} grid ${gap}`}>
         {matches.map((match) => (
           <DisplayMatchCard key={match.id} match={match} />
         ))}
 
-        {!matches.length && (
-          <EmptyCard />
-        )}
+        {!matches.length && <EmptyCard />}
       </div>
     </section>
   )
@@ -136,6 +87,7 @@ function BracketColumn({
 
 function FinalCard({ match }: { match?: Match }) {
   const winner = match ? getWinnerSide(match) : null
+
   const winnerName =
     match && winner === 'home'
       ? match.home_team
@@ -144,14 +96,14 @@ function FinalCard({ match }: { match?: Match }) {
         : null
 
   return (
-    <section className="mt-[290px]">
-      <h4 className="mb-4 text-center text-sm font-black uppercase text-fifaGold">
+    <section className="min-w-0 mt-48">
+      <h4 className="mb-3 text-center text-[10px] xl:text-xs font-black uppercase text-fifaGold">
         Finale
       </h4>
 
       {match ? (
-        <div className="rounded-3xl border border-fifaGold/60 bg-fifaGold/10 p-4 shadow-glow">
-          <div className="mb-3 text-center text-xs text-white/65">
+        <div className="rounded-2xl border border-fifaGold/60 bg-fifaGold/10 p-2 xl:p-3 shadow-glow">
+          <div className="mb-2 text-center text-[9px] xl:text-[10px] text-white/65 truncate">
             #{match.match_number || '-'} · {formatDateTime(match.kickoff_at)}
           </div>
 
@@ -167,12 +119,12 @@ function FinalCard({ match }: { match?: Match }) {
             active={winner === 'away'}
           />
 
-          <div className="mt-4 rounded-2xl bg-black/25 p-4 text-center">
-            <p className="text-xs uppercase tracking-wide text-fifaGold font-black">
+          <div className="mt-3 rounded-xl bg-black/25 p-2 text-center">
+            <p className="text-[9px] uppercase tracking-wide text-fifaGold font-black">
               Vainqueur
             </p>
 
-            <p className="mt-2 text-xl font-black text-white">
+            <p className="mt-1 truncate text-sm xl:text-base font-black text-white">
               {winnerName || 'À déterminer'}
             </p>
           </div>
@@ -188,8 +140,8 @@ function DisplayMatchCard({ match }: { match: Match }) {
   const winner = getWinnerSide(match)
 
   return (
-    <div className="relative rounded-2xl border border-white/15 bg-white/[0.07] p-3">
-      <div className="mb-2 flex items-center justify-between gap-2 text-[11px] text-white/60">
+    <div className="min-w-0 rounded-xl border border-white/15 bg-white/[0.07] p-2">
+      <div className="mb-1 flex items-center justify-between gap-1 text-[8px] xl:text-[10px] text-white/60">
         <span className="font-bold">#{match.match_number || '-'}</span>
         <span className="truncate">{formatDateTime(match.kickoff_at)}</span>
       </div>
@@ -207,7 +159,7 @@ function DisplayMatchCard({ match }: { match: Match }) {
       />
 
       {match.penalties && match.penalty_winner && (
-        <p className="mt-2 rounded-xl bg-fifaGold/15 p-2 text-center text-[10px] text-fifaGold font-bold">
+        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[8px] text-fifaGold font-bold truncate">
           TAB : {match.penalty_winner === 'home' ? match.home_team : match.away_team}
         </p>
       )}
@@ -226,19 +178,19 @@ function TeamLine({
 }) {
   return (
     <div
-      className={`mt-2 flex items-center gap-2 rounded-xl px-2 py-2 ${
+      className={`mt-1 flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-1.5 ${
         active ? 'bg-fifaGold/25' : 'bg-black/25'
       }`}
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[10px] font-black">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[8px] font-black">
         {teamCode(name)}
       </div>
 
-      <div className="min-w-0 flex-1 truncate text-sm font-black text-white">
+      <div className="min-w-0 flex-1 truncate text-[10px] xl:text-xs font-black text-white">
         {name || 'À déterminer'}
       </div>
 
-      <div className="w-9 rounded-lg border border-white/15 bg-black/30 py-1 text-center text-sm font-black text-white">
+      <div className="w-7 shrink-0 rounded-md border border-white/15 bg-black/30 py-0.5 text-center text-[10px] xl:text-xs font-black text-white">
         {score ?? '-'}
       </div>
     </div>
@@ -247,7 +199,7 @@ function TeamLine({
 
 function EmptyCard() {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 text-center text-sm text-white/50">
+    <div className="rounded-xl border border-white/10 bg-white/[0.04] p-2 text-center text-[10px] text-white/50">
       À déterminer
     </div>
   )
