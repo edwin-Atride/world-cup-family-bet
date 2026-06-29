@@ -34,18 +34,25 @@ export function ClassementBracket({ matches }: { matches: Match[] }) {
         </p>
       </div>
 
-      <div className="grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
-        <Column title="16èmes" matches={r32.slice(0, 8)} rows={r32Rows} />
-        <Column title="8èmes" matches={r16.slice(0, 4)} rows={r16Rows} />
-        <Column title="Quarts" matches={qf.slice(0, 2)} rows={qfRows} />
-        <Column title="Demi" matches={sf.slice(0, 1)} rows={sfRows} />
+      <div className="w-full overflow-auto rounded-2xl pb-4 max-h-[75vh] lg:overflow-visible lg:max-h-none lg:pb-0">
+        <div className="min-w-[1200px] lg:min-w-0 grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
+          <Column title="16èmes" matches={r32.slice(0, 8)} rows={r32Rows} />
+          <Column title="8èmes" matches={r16.slice(0, 4)} rows={r16Rows} />
+          <Column title="Quarts" matches={qf.slice(0, 2)} rows={qfRows} />
+          <Column title="Demi" matches={sf.slice(0, 1)} rows={sfRows} />
 
-        <Column title="Finale" matches={final ? [final] : []} rows={finalRows} final />
+          <Column
+            title="Finale"
+            matches={final ? [final] : []}
+            rows={finalRows}
+            final
+          />
 
-        <Column title="Demi" matches={sf.slice(1, 2)} rows={sfRows} />
-        <Column title="Quarts" matches={qf.slice(2, 4)} rows={qfRows} />
-        <Column title="8èmes" matches={r16.slice(4, 8)} rows={r16Rows} />
-        <Column title="16èmes" matches={r32.slice(8, 16)} rows={r32Rows} />
+          <Column title="Demi" matches={sf.slice(1, 2)} rows={sfRows} />
+          <Column title="Quarts" matches={qf.slice(2, 4)} rows={qfRows} />
+          <Column title="8èmes" matches={r16.slice(4, 8)} rows={r16Rows} />
+          <Column title="16èmes" matches={r32.slice(8, 16)} rows={r32Rows} />
+        </div>
       </div>
     </div>
   )

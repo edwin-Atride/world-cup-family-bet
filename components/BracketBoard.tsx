@@ -37,8 +37,8 @@ export function BracketBoard({
   const final = byRound('f')[0]
 
   return (
-    <div className="w-full">
-      <div className="grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
+    <div className="w-full overflow-auto rounded-2xl pb-4 max-h-[75vh] lg:overflow-visible lg:max-h-none lg:pb-0">
+      <div className="min-w-[1200px] lg:min-w-0 grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
         <Column
           title="16èmes"
           matches={r32.slice(0, 8)}
