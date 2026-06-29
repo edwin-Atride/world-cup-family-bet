@@ -10,6 +10,12 @@ type Pred = Pick<
 
 type RoundId = 'r32' | 'r16' | 'qf' | 'sf' | 'f'
 
+const r32Rows = [1, 5, 9, 13, 17, 21, 25, 29]
+const r16Rows = [3, 11, 19, 27]
+const qfRows = [7, 23]
+const sfRows = [15]
+const finalRows = [15]
+
 export function BracketBoard({
   matches,
   predictions = [],
@@ -30,87 +36,70 @@ export function BracketBoard({
   const sf = byRound('sf')
   const final = byRound('f')[0]
 
-  const leftR32 = r32.slice(0, 8)
-  const rightR32 = r32.slice(8, 16)
-
-  const leftR16 = r16.slice(0, 4)
-  const rightR16 = r16.slice(4, 8)
-
-  const leftQf = qf.slice(0, 2)
-  const rightQf = qf.slice(2, 4)
-
-  const leftSf = sf.slice(0, 1)
-  const rightSf = sf.slice(1, 2)
-
   return (
     <div className="w-full">
-      <div className="mx-auto w-full grid grid-cols-[150px_135px_120px_105px_140px_105px_120px_135px_150px] gap-2 items-start">
-        <BracketColumn
+      <div className="grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
+        <Column
           title="16èmes"
-          matches={leftR32}
-          offset="mt-0"
-          gap="gap-2"
+          matches={r32.slice(0, 8)}
+          rows={r32Rows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="8èmes"
-          matches={leftR16}
-          offset="mt-8"
-          gap="gap-7"
+          matches={r16.slice(0, 4)}
+          rows={r16Rows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="Quarts"
-          matches={leftQf}
-          offset="mt-24"
-          gap="gap-20"
+          matches={qf.slice(0, 2)}
+          rows={qfRows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="Demi"
-          matches={leftSf}
-          offset="mt-48"
-          gap="gap-0"
+          matches={sf.slice(0, 1)}
+          rows={sfRows}
           predictionByMatch={predictionByMatch}
         />
 
-        <FinalCard
-          match={final}
-          prediction={final ? predictionByMatch.get(final.id) : undefined}
+        <Column
+          title="Finale"
+          matches={final ? [final] : []}
+          rows={finalRows}
+          predictionByMatch={predictionByMatch}
+          final
         />
 
-        <BracketColumn
+        <Column
           title="Demi"
-          matches={rightSf}
-          offset="mt-48"
-          gap="gap-0"
+          matches={sf.slice(1, 2)}
+          rows={sfRows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="Quarts"
-          matches={rightQf}
-          offset="mt-24"
-          gap="gap-20"
+          matches={qf.slice(2, 4)}
+          rows={qfRows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="8èmes"
-          matches={rightR16}
-          offset="mt-8"
-          gap="gap-7"
+          matches={r16.slice(4, 8)}
+          rows={r16Rows}
           predictionByMatch={predictionByMatch}
         />
 
-        <BracketColumn
+        <Column
           title="16èmes"
-          matches={rightR32}
-          offset="mt-0"
-          gap="gap-2"
+          matches={r32.slice(8, 16)}
+          rows={r32Rows}
           predictionByMatch={predictionByMatch}
         />
       </div>
@@ -118,54 +107,43 @@ export function BracketBoard({
   )
 }
 
-function BracketColumn({
+function Column({
   title,
   matches,
-  offset,
-  gap,
+  rows,
   predictionByMatch,
+  final = false,
 }: {
   title: string
   matches: Match[]
-  offset: string
-  gap: string
+  rows: number[]
   predictionByMatch: Map<string, Pred>
+  final?: boolean
 }) {
   return (
     <section className="min-w-0">
-      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-white">
+      <h4
+        className={`mb-2 text-center text-[9px] xl:text-[10px] font-black uppercase ${
+          final ? 'text-fifaGold' : 'text-white'
+        }`}
+      >
         {title}
       </h4>
 
-      <div className={`${offset} grid ${gap}`}>
-        {matches.map((match) => (
-          <BracketMatchCard
+      <div className="grid h-[720px] grid-rows-[repeat(32,minmax(0,1fr))]">
+        {matches.map((match, index) => (
+          <div
             key={match.id}
-            match={match}
-            prediction={predictionByMatch.get(match.id)}
-          />
+            style={{ gridRow: `${rows[index] || 1} / span ${final ? 5 : 3}` }}
+          >
+            <BracketMatchCard
+              match={match}
+              prediction={predictionByMatch.get(match.id)}
+              final={final}
+            />
+          </div>
         ))}
       </div>
-    </section>
-  )
-}
-
-function FinalCard({
-  match,
-  prediction,
-}: {
-  match?: Match
-  prediction?: Pred
-}) {
-  if (!match) return null
-
-  return (
-    <section className="min-w-0 mt-40">
-      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-fifaGold">
-        Finale
-      </h4>
-
-      <BracketMatchCard match={match} prediction={prediction} />
     </section>
   )
 }
@@ -173,9 +151,11 @@ function FinalCard({
 function BracketMatchCard({
   match,
   prediction,
+  final = false,
 }: {
   match: Match
   prediction?: Pred
+  final?: boolean
 }) {
   const winner = getWinnerSide(match)
   const locked = isLocked(match.kickoff_at)
@@ -193,9 +173,13 @@ function BracketMatchCard({
   return (
     <Link
       href={`/paris/${match.id}`}
-      className="block min-w-0 rounded-xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.11] transition p-2 shadow-glow"
+      className={`block min-w-0 rounded-xl border p-2 transition hover:bg-white/[0.12] ${
+        final
+          ? 'border-fifaGold/60 bg-fifaGold/10 shadow-glow'
+          : 'border-white/15 bg-white/[0.07]'
+      }`}
     >
-      <div className="mb-1 flex items-center justify-between gap-1 text-[8px] text-white/60">
+      <div className="mb-1 flex items-center justify-between gap-1 text-[7px] xl:text-[8px] text-white/60">
         <span className="font-bold">#{match.match_number || '-'}</span>
         <span className="truncate">{formatDateTime(match.kickoff_at)}</span>
       </div>
@@ -214,30 +198,41 @@ function BracketMatchCard({
         wrong={wrongAway}
       />
 
-      <div className="mt-1 flex items-center justify-between gap-1 text-[8px] text-white/60">
+      <div className="mt-1 flex items-center justify-between gap-1 text-[7px] xl:text-[8px] text-white/60">
         <span>{locked ? '🔒' : prediction ? '✅ Voté' : 'À voter'}</span>
       </div>
 
       {match.penalties && match.penalty_winner && (
-        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[8px] text-fifaGold font-bold truncate">
+        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[7px] text-fifaGold font-bold truncate">
           TAB : {match.penalty_winner === 'home' ? match.home_team : match.away_team}
         </p>
       )}
 
       {prediction && (
-        <p className="mt-1 text-[8px] text-white/65">
+        <p className="mt-1 text-[7px] xl:text-[8px] text-white/65 truncate">
           {prediction.pick === 'home'
             ? match.home_team
             : prediction.pick === 'away'
               ? match.away_team
               : 'Nul'}
+
           {prediction.pred_home !== null && prediction.pred_away !== null
             ? ` · ${prediction.pred_home}-${prediction.pred_away}`
             : ''}
+
           {prediction.pred_penalties ? ' · TAB' : ''}
+
           {match.status === 'finished'
-            ? ` · ${prediction.points} pt${prediction.points > 1 || prediction.points < -1 ? 's' : ''}`
+            ? ` · ${prediction.points} pt${
+                prediction.points > 1 || prediction.points < -1 ? 's' : ''
+              }`
             : ''}
+        </p>
+      )}
+
+      {final && (
+        <p className="mt-2 rounded-lg bg-black/25 p-1 text-center text-[7px] xl:text-[8px] font-black text-fifaGold">
+          Finale
         </p>
       )}
     </Link>
@@ -257,27 +252,27 @@ function TeamRow({
 }) {
   return (
     <div
-      className={`mt-1 flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-1.5 ${
-        active ? 'bg-fifaGold/20' : 'bg-black/20'
+      className={`mt-1 flex min-w-0 items-center gap-1 rounded-lg px-1 py-1 ${
+        active ? 'bg-fifaGold/25' : 'bg-black/25'
       }`}
     >
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[8px] font-black">
+      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[7px] font-black">
         {teamCode(name)}
       </div>
 
-      <div className="min-w-0 flex-1 truncate text-[10px] font-black">
+      <div className="min-w-0 flex-1 truncate text-[8px] xl:text-[10px] font-black text-white">
         {wrong ? (
           <span className="text-red-300 line-through decoration-2">
             {name}
           </span>
         ) : (
-          name
+          name || 'À déterminer'
         )}
       </div>
 
-      {wrong && <span className="text-red-400 font-black text-[10px]">✕</span>}
+      {wrong && <span className="text-red-400 font-black text-[9px]">✕</span>}
 
-      <div className="w-7 shrink-0 rounded-md border border-white/15 bg-black/20 py-0.5 text-center text-[10px] font-black text-white">
+      <div className="w-6 shrink-0 rounded-md border border-white/15 bg-black/30 py-0.5 text-center text-[8px] xl:text-[10px] font-black text-white">
         {score ?? '-'}
       </div>
     </div>
