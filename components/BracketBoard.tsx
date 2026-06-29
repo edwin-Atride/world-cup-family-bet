@@ -10,11 +10,11 @@ type Pred = Pick<
 
 type RoundId = 'r32' | 'r16' | 'qf' | 'sf' | 'f'
 
-const r32Rows = [1, 5, 9, 13, 17, 21, 25, 29]
-const r16Rows = [3, 11, 19, 27]
-const qfRows = [7, 23]
-const sfRows = [15]
-const finalRows = [15]
+const r32Rows = [1, 6, 11, 16, 21, 26, 31, 36]
+const r16Rows = [3, 13, 23, 33]
+const qfRows = [8, 28]
+const sfRows = [18]
+const finalRows = [18]
 
 export function BracketBoard({
   matches,
@@ -39,69 +39,17 @@ export function BracketBoard({
   return (
     <div className="w-full overflow-auto rounded-2xl pb-4 max-h-[75vh] lg:overflow-visible lg:max-h-none lg:pb-0">
       <div className="min-w-[1200px] lg:min-w-0 grid w-full grid-cols-[1.15fr_1fr_.9fr_.8fr_1fr_.8fr_.9fr_1fr_1.15fr] gap-2 items-start">
-        <Column
-          title="16èmes"
-          matches={r32.slice(0, 8)}
-          rows={r32Rows}
-          predictionByMatch={predictionByMatch}
-        />
+        <Column title="16èmes" matches={r32.slice(0, 8)} rows={r32Rows} predictionByMatch={predictionByMatch} />
+        <Column title="8èmes" matches={r16.slice(0, 4)} rows={r16Rows} predictionByMatch={predictionByMatch} />
+        <Column title="Quarts" matches={qf.slice(0, 2)} rows={qfRows} predictionByMatch={predictionByMatch} />
+        <Column title="Demi" matches={sf.slice(0, 1)} rows={sfRows} predictionByMatch={predictionByMatch} />
 
-        <Column
-          title="8èmes"
-          matches={r16.slice(0, 4)}
-          rows={r16Rows}
-          predictionByMatch={predictionByMatch}
-        />
+        <Column title="Finale" matches={final ? [final] : []} rows={finalRows} predictionByMatch={predictionByMatch} final />
 
-        <Column
-          title="Quarts"
-          matches={qf.slice(0, 2)}
-          rows={qfRows}
-          predictionByMatch={predictionByMatch}
-        />
-
-        <Column
-          title="Demi"
-          matches={sf.slice(0, 1)}
-          rows={sfRows}
-          predictionByMatch={predictionByMatch}
-        />
-
-        <Column
-          title="Finale"
-          matches={final ? [final] : []}
-          rows={finalRows}
-          predictionByMatch={predictionByMatch}
-          final
-        />
-
-        <Column
-          title="Demi"
-          matches={sf.slice(1, 2)}
-          rows={sfRows}
-          predictionByMatch={predictionByMatch}
-        />
-
-        <Column
-          title="Quarts"
-          matches={qf.slice(2, 4)}
-          rows={qfRows}
-          predictionByMatch={predictionByMatch}
-        />
-
-        <Column
-          title="8èmes"
-          matches={r16.slice(4, 8)}
-          rows={r16Rows}
-          predictionByMatch={predictionByMatch}
-        />
-
-        <Column
-          title="16èmes"
-          matches={r32.slice(8, 16)}
-          rows={r32Rows}
-          predictionByMatch={predictionByMatch}
-        />
+        <Column title="Demi" matches={sf.slice(1, 2)} rows={sfRows} predictionByMatch={predictionByMatch} />
+        <Column title="Quarts" matches={qf.slice(2, 4)} rows={qfRows} predictionByMatch={predictionByMatch} />
+        <Column title="8èmes" matches={r16.slice(4, 8)} rows={r16Rows} predictionByMatch={predictionByMatch} />
+        <Column title="16èmes" matches={r32.slice(8, 16)} rows={r32Rows} predictionByMatch={predictionByMatch} />
       </div>
     </div>
   )
@@ -130,11 +78,11 @@ function Column({
         {title}
       </h4>
 
-      <div className="grid h-[720px] grid-rows-[repeat(32,minmax(0,1fr))]">
+      <div className="grid h-[1050px] grid-rows-[repeat(40,minmax(0,1fr))]">
         {matches.map((match, index) => (
           <div
             key={match.id}
-            style={{ gridRow: `${rows[index] || 1} / span ${final ? 5 : 3}` }}
+            style={{ gridRow: `${rows[index] || 1} / span ${final ? 5 : 4}` }}
           >
             <BracketMatchCard
               match={match}
@@ -158,7 +106,7 @@ function BracketMatchCard({
   final?: boolean
 }) {
   const winner = getWinnerSide(match)
-  const locked = isLocked(match.kickoff_at)
+  const locked = match.status !== 'upcoming' || isLocked(match.kickoff_at)
 
   const wrongHome =
     match.status === 'finished' &&
@@ -198,15 +146,9 @@ function BracketMatchCard({
         wrong={wrongAway}
       />
 
-      <div className="mt-1 flex items-center justify-between gap-1 text-[7px] xl:text-[8px] text-white/60">
-        <span>{locked ? '🔒' : prediction ? '✅ Voté' : 'À voter'}</span>
+      <div className="mt-1 text-[7px] xl:text-[8px] text-white/60">
+        {locked ? '🔒 Verrouillé' : prediction ? '✅ Voté' : 'À voter'}
       </div>
-
-      {match.penalties && match.penalty_winner && (
-        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[7px] text-fifaGold font-bold truncate">
-          TAB : {match.penalty_winner === 'home' ? match.home_team : match.away_team}
-        </p>
-      )}
 
       {prediction && (
         <p className="mt-1 text-[7px] xl:text-[8px] text-white/65 truncate">
@@ -230,9 +172,9 @@ function BracketMatchCard({
         </p>
       )}
 
-      {final && (
-        <p className="mt-2 rounded-lg bg-black/25 p-1 text-center text-[7px] xl:text-[8px] font-black text-fifaGold">
-          Finale
+      {match.penalties && match.penalty_winner && (
+        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[7px] text-fifaGold font-bold truncate">
+          TAB : {match.penalty_winner === 'home' ? match.home_team : match.away_team}
         </p>
       )}
     </Link>

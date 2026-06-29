@@ -4,11 +4,11 @@ import { formatDateTime } from '@/lib/utils'
 
 type RoundId = 'r32' | 'r16' | 'qf' | 'sf' | 'f'
 
-const r32Rows = [1, 5, 9, 13, 17, 21, 25, 29]
-const r16Rows = [3, 11, 19, 27]
-const qfRows = [7, 23]
-const sfRows = [15]
-const finalRows = [15]
+const r32Rows = [1, 6, 11, 16, 21, 26, 31, 36]
+const r16Rows = [3, 13, 23, 33]
+const qfRows = [8, 28]
+const sfRows = [18]
+const finalRows = [18]
 
 export function ClassementBracket({ matches }: { matches: Match[] }) {
   const byRound = (round: RoundId) =>
@@ -79,11 +79,11 @@ function Column({
         {title}
       </h4>
 
-      <div className="grid h-[720px] grid-rows-[repeat(32,minmax(0,1fr))]">
+      <div className="grid h-[1050px] grid-rows-[repeat(40,minmax(0,1fr))]">
         {matches.map((match, index) => (
           <div
             key={match.id}
-            style={{ gridRow: `${rows[index] || 1} / span ${final ? 5 : 3}` }}
+            style={{ gridRow: `${rows[index] || 1} / span ${final ? 5 : 4}` }}
           >
             <DisplayMatchCard match={match} final={final} />
           </div>
