@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server';import { createAdminSupabase } from '@/lib/supabase/server';
+export async function GET(req:Request){const url=new URL(req.url);const secret=url.searchParams.get('secret');const manual=url.searchParams.get('manual');if(!manual && secret!==process.env.CRON_SECRET)return NextResponse.json({error:'Non autorisé'},{status:401});const supabase=createAdminSupabase();const{error}=await supabase.rpc('calculate_all_points');if(error)return NextResponse.json({error:error.message},{status:500});return NextResponse.json({ok:true});}

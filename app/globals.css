@@ -1,0 +1,2 @@
+@tailwind base;@tailwind components;@tailwind utilities;
+:root{color-scheme:dark} body{background:radial-gradient(circle at top,#0d3b80 0,#041E42 42%,#020916 100%); color:white; min-height:100vh}.glass{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(18px)} input,select{color:#0f172a}.safe-bottom{padding-bottom:env(safe-area-inset-bottom)}
