@@ -29,29 +29,74 @@ export function ClassementBracket({ matches }: { matches: Match[] }) {
   const rightSf = sf.slice(1, 2)
 
   return (
-    <div className="w-full pb-10">
-      <div className="mb-6 text-center">
+    <div className="w-full">
+      <div className="mb-5 text-center">
         <h3 className="text-2xl font-black text-white">
           🏆 Tableau final
         </h3>
-
         <p className="text-sm text-white/60">
           Mise à jour automatique avec les scores validés par l’admin.
         </p>
       </div>
 
-      <div className="mx-auto grid w-full grid-cols-[1.15fr_1fr_0.95fr_0.85fr_1.15fr_0.85fr_0.95fr_1fr_1.15fr] gap-2 xl:gap-3 items-start">
-        <BracketColumn title="16èmes" matches={leftR32} top="mt-0" gap="gap-2" />
-        <BracketColumn title="8èmes" matches={leftR16} top="mt-10" gap="gap-8" />
-        <BracketColumn title="Quarts" matches={leftQf} top="mt-28" gap="gap-24" />
-        <BracketColumn title="Demi" matches={leftSf} top="mt-56" gap="gap-0" />
+      <div className="mx-auto w-full grid grid-cols-[150px_135px_120px_105px_140px_105px_120px_135px_150px] gap-2 items-start">
+        <BracketColumn
+          title="16èmes"
+          matches={leftR32}
+          offset="mt-0"
+          gap="gap-2"
+        />
+
+        <BracketColumn
+          title="8èmes"
+          matches={leftR16}
+          offset="mt-8"
+          gap="gap-7"
+        />
+
+        <BracketColumn
+          title="Quarts"
+          matches={leftQf}
+          offset="mt-24"
+          gap="gap-20"
+        />
+
+        <BracketColumn
+          title="Demi"
+          matches={leftSf}
+          offset="mt-48"
+          gap="gap-0"
+        />
 
         <FinalCard match={final} />
 
-        <BracketColumn title="Demi" matches={rightSf} top="mt-56" gap="gap-0" />
-        <BracketColumn title="Quarts" matches={rightQf} top="mt-28" gap="gap-24" />
-        <BracketColumn title="8èmes" matches={rightR16} top="mt-10" gap="gap-8" />
-        <BracketColumn title="16èmes" matches={rightR32} top="mt-0" gap="gap-2" />
+        <BracketColumn
+          title="Demi"
+          matches={rightSf}
+          offset="mt-48"
+          gap="gap-0"
+        />
+
+        <BracketColumn
+          title="Quarts"
+          matches={rightQf}
+          offset="mt-24"
+          gap="gap-20"
+        />
+
+        <BracketColumn
+          title="8èmes"
+          matches={rightR16}
+          offset="mt-8"
+          gap="gap-7"
+        />
+
+        <BracketColumn
+          title="16èmes"
+          matches={rightR32}
+          offset="mt-0"
+          gap="gap-2"
+        />
       </div>
     </div>
   )
@@ -60,21 +105,21 @@ export function ClassementBracket({ matches }: { matches: Match[] }) {
 function BracketColumn({
   title,
   matches,
-  top,
+  offset,
   gap,
 }: {
   title: string
   matches: Match[]
-  top: string
+  offset: string
   gap: string
 }) {
   return (
     <section className="min-w-0">
-      <h4 className="mb-3 text-center text-[10px] xl:text-xs font-black uppercase text-white">
+      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-white">
         {title}
       </h4>
 
-      <div className={`${top} grid ${gap}`}>
+      <div className={`${offset} grid ${gap}`}>
         {matches.map((match) => (
           <DisplayMatchCard key={match.id} match={match} />
         ))}
@@ -96,14 +141,14 @@ function FinalCard({ match }: { match?: Match }) {
         : null
 
   return (
-    <section className="min-w-0 mt-48">
-      <h4 className="mb-3 text-center text-[10px] xl:text-xs font-black uppercase text-fifaGold">
+    <section className="min-w-0 mt-40">
+      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-fifaGold">
         Finale
       </h4>
 
       {match ? (
-        <div className="rounded-2xl border border-fifaGold/60 bg-fifaGold/10 p-2 xl:p-3 shadow-glow">
-          <div className="mb-2 text-center text-[9px] xl:text-[10px] text-white/65 truncate">
+        <div className="rounded-2xl border border-fifaGold/60 bg-fifaGold/10 p-2 shadow-glow">
+          <div className="mb-2 text-center text-[8px] text-white/65 truncate">
             #{match.match_number || '-'} · {formatDateTime(match.kickoff_at)}
           </div>
 
@@ -119,12 +164,12 @@ function FinalCard({ match }: { match?: Match }) {
             active={winner === 'away'}
           />
 
-          <div className="mt-3 rounded-xl bg-black/25 p-2 text-center">
-            <p className="text-[9px] uppercase tracking-wide text-fifaGold font-black">
+          <div className="mt-2 rounded-xl bg-black/25 p-2 text-center">
+            <p className="text-[8px] uppercase tracking-wide text-fifaGold font-black">
               Vainqueur
             </p>
 
-            <p className="mt-1 truncate text-sm xl:text-base font-black text-white">
+            <p className="mt-1 truncate text-sm font-black text-white">
               {winnerName || 'À déterminer'}
             </p>
           </div>
@@ -141,7 +186,7 @@ function DisplayMatchCard({ match }: { match: Match }) {
 
   return (
     <div className="min-w-0 rounded-xl border border-white/15 bg-white/[0.07] p-2">
-      <div className="mb-1 flex items-center justify-between gap-1 text-[8px] xl:text-[10px] text-white/60">
+      <div className="mb-1 flex items-center justify-between gap-1 text-[8px] text-white/60">
         <span className="font-bold">#{match.match_number || '-'}</span>
         <span className="truncate">{formatDateTime(match.kickoff_at)}</span>
       </div>
@@ -186,11 +231,11 @@ function TeamLine({
         {teamCode(name)}
       </div>
 
-      <div className="min-w-0 flex-1 truncate text-[10px] xl:text-xs font-black text-white">
+      <div className="min-w-0 flex-1 truncate text-[10px] font-black text-white">
         {name || 'À déterminer'}
       </div>
 
-      <div className="w-7 shrink-0 rounded-md border border-white/15 bg-black/30 py-0.5 text-center text-[10px] xl:text-xs font-black text-white">
+      <div className="w-7 shrink-0 rounded-md border border-white/15 bg-black/30 py-0.5 text-center text-[10px] font-black text-white">
         {score ?? '-'}
       </div>
     </div>

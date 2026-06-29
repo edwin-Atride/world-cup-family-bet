@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { Match, Prediction } from '@/lib/types'
-import { BRACKET_ROUNDS, getWinnerSide, teamCode, isLocked } from '@/lib/bracket'
+import { getWinnerSide, teamCode, isLocked } from '@/lib/bracket'
 import { formatDateTime } from '@/lib/utils'
 
 type Pred = Pick<
   Prediction,
   'match_id' | 'pick' | 'pred_home' | 'pred_away' | 'pred_penalties' | 'points'
 >
+
+type RoundId = 'r32' | 'r16' | 'qf' | 'sf' | 'f'
 
 export function BracketBoard({
   matches,
@@ -17,34 +19,154 @@ export function BracketBoard({
 }) {
   const predictionByMatch = new Map(predictions.map((p) => [p.match_id, p]))
 
+  const byRound = (round: RoundId) =>
+    matches
+      .filter((m) => m.bracket_round === round)
+      .sort((a, b) => (a.match_number || 0) - (b.match_number || 0))
+
+  const r32 = byRound('r32')
+  const r16 = byRound('r16')
+  const qf = byRound('qf')
+  const sf = byRound('sf')
+  const final = byRound('f')[0]
+
+  const leftR32 = r32.slice(0, 8)
+  const rightR32 = r32.slice(8, 16)
+
+  const leftR16 = r16.slice(0, 4)
+  const rightR16 = r16.slice(4, 8)
+
+  const leftQf = qf.slice(0, 2)
+  const rightQf = qf.slice(2, 4)
+
+  const leftSf = sf.slice(0, 1)
+  const rightSf = sf.slice(1, 2)
+
   return (
-    <div className="w-full pb-10">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
-        {BRACKET_ROUNDS.map((round) => {
-          const roundMatches = matches
-            .filter((m) => m.bracket_round === round.id)
-            .sort((a, b) => (a.match_number || 0) - (b.match_number || 0))
+    <div className="w-full">
+      <div className="mx-auto w-full grid grid-cols-[150px_135px_120px_105px_140px_105px_120px_135px_150px] gap-2 items-start">
+        <BracketColumn
+          title="16èmes"
+          matches={leftR32}
+          offset="mt-0"
+          gap="gap-2"
+          predictionByMatch={predictionByMatch}
+        />
 
-          return (
-            <section key={round.id} className="min-w-0 space-y-3">
-              <h2 className="text-center text-sm font-black uppercase tracking-wide text-white">
-                {round.label}
-              </h2>
+        <BracketColumn
+          title="8èmes"
+          matches={leftR16}
+          offset="mt-8"
+          gap="gap-7"
+          predictionByMatch={predictionByMatch}
+        />
 
-              <div className="grid gap-3">
-                {roundMatches.map((match) => (
-                  <BracketMatchCard
-                    key={match.id}
-                    match={match}
-                    prediction={predictionByMatch.get(match.id)}
-                  />
-                ))}
-              </div>
-            </section>
-          )
-        })}
+        <BracketColumn
+          title="Quarts"
+          matches={leftQf}
+          offset="mt-24"
+          gap="gap-20"
+          predictionByMatch={predictionByMatch}
+        />
+
+        <BracketColumn
+          title="Demi"
+          matches={leftSf}
+          offset="mt-48"
+          gap="gap-0"
+          predictionByMatch={predictionByMatch}
+        />
+
+        <FinalCard
+          match={final}
+          prediction={final ? predictionByMatch.get(final.id) : undefined}
+        />
+
+        <BracketColumn
+          title="Demi"
+          matches={rightSf}
+          offset="mt-48"
+          gap="gap-0"
+          predictionByMatch={predictionByMatch}
+        />
+
+        <BracketColumn
+          title="Quarts"
+          matches={rightQf}
+          offset="mt-24"
+          gap="gap-20"
+          predictionByMatch={predictionByMatch}
+        />
+
+        <BracketColumn
+          title="8èmes"
+          matches={rightR16}
+          offset="mt-8"
+          gap="gap-7"
+          predictionByMatch={predictionByMatch}
+        />
+
+        <BracketColumn
+          title="16èmes"
+          matches={rightR32}
+          offset="mt-0"
+          gap="gap-2"
+          predictionByMatch={predictionByMatch}
+        />
       </div>
     </div>
+  )
+}
+
+function BracketColumn({
+  title,
+  matches,
+  offset,
+  gap,
+  predictionByMatch,
+}: {
+  title: string
+  matches: Match[]
+  offset: string
+  gap: string
+  predictionByMatch: Map<string, Pred>
+}) {
+  return (
+    <section className="min-w-0">
+      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-white">
+        {title}
+      </h4>
+
+      <div className={`${offset} grid ${gap}`}>
+        {matches.map((match) => (
+          <BracketMatchCard
+            key={match.id}
+            match={match}
+            prediction={predictionByMatch.get(match.id)}
+          />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function FinalCard({
+  match,
+  prediction,
+}: {
+  match?: Match
+  prediction?: Pred
+}) {
+  if (!match) return null
+
+  return (
+    <section className="min-w-0 mt-40">
+      <h4 className="mb-2 text-center text-[10px] font-black uppercase text-fifaGold">
+        Finale
+      </h4>
+
+      <BracketMatchCard match={match} prediction={prediction} />
+    </section>
   )
 }
 
@@ -71,12 +193,11 @@ function BracketMatchCard({
   return (
     <Link
       href={`/paris/${match.id}`}
-      className="block min-w-0 rounded-2xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.11] transition p-3 shadow-glow"
+      className="block min-w-0 rounded-xl border border-white/15 bg-white/[0.07] hover:bg-white/[0.11] transition p-2 shadow-glow"
     >
-      <div className="mb-2 flex items-center justify-between gap-2 text-[10px] xl:text-[11px] text-white/60">
+      <div className="mb-1 flex items-center justify-between gap-1 text-[8px] text-white/60">
         <span className="font-bold">#{match.match_number || '-'}</span>
         <span className="truncate">{formatDateTime(match.kickoff_at)}</span>
-        <span>{locked ? '🔒' : prediction ? '✅' : 'À voter'}</span>
       </div>
 
       <TeamRow
@@ -93,32 +214,29 @@ function BracketMatchCard({
         wrong={wrongAway}
       />
 
+      <div className="mt-1 flex items-center justify-between gap-1 text-[8px] text-white/60">
+        <span>{locked ? '🔒' : prediction ? '✅ Voté' : 'À voter'}</span>
+      </div>
+
       {match.penalties && match.penalty_winner && (
-        <p className="mt-2 rounded-xl bg-fifaGold/15 p-2 text-center text-[10px] text-fifaGold font-bold truncate">
-          Gagné aux tirs au but :{' '}
-          {match.penalty_winner === 'home' ? match.home_team : match.away_team}
+        <p className="mt-1 rounded-lg bg-fifaGold/15 p-1 text-center text-[8px] text-fifaGold font-bold truncate">
+          TAB : {match.penalty_winner === 'home' ? match.home_team : match.away_team}
         </p>
       )}
 
       {prediction && (
-        <p className="mt-2 text-[10px] xl:text-[11px] text-white/65">
-          Ton prono :{' '}
+        <p className="mt-1 text-[8px] text-white/65">
           {prediction.pick === 'home'
             ? match.home_team
             : prediction.pick === 'away'
               ? match.away_team
               : 'Nul'}
-
           {prediction.pred_home !== null && prediction.pred_away !== null
             ? ` · ${prediction.pred_home}-${prediction.pred_away}`
             : ''}
-
           {prediction.pred_penalties ? ' · TAB' : ''}
-
           {match.status === 'finished'
-            ? ` · ${prediction.points} pt${
-                prediction.points > 1 || prediction.points < -1 ? 's' : ''
-              }`
+            ? ` · ${prediction.points} pt${prediction.points > 1 || prediction.points < -1 ? 's' : ''}`
             : ''}
         </p>
       )}
@@ -139,15 +257,15 @@ function TeamRow({
 }) {
   return (
     <div
-      className={`mt-2 flex min-w-0 items-center gap-2 rounded-xl px-2 py-2 ${
+      className={`mt-1 flex min-w-0 items-center gap-1 rounded-lg px-1.5 py-1.5 ${
         active ? 'bg-fifaGold/20' : 'bg-black/20'
       }`}
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[10px] font-black">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-fifaGold text-fifaBlue text-[8px] font-black">
         {teamCode(name)}
       </div>
 
-      <div className="min-w-0 flex-1 truncate font-bold text-xs xl:text-sm">
+      <div className="min-w-0 flex-1 truncate text-[10px] font-black">
         {wrong ? (
           <span className="text-red-300 line-through decoration-2">
             {name}
@@ -157,9 +275,9 @@ function TeamRow({
         )}
       </div>
 
-      {wrong && <span className="text-red-400 font-black">✕</span>}
+      {wrong && <span className="text-red-400 font-black text-[10px]">✕</span>}
 
-      <div className="w-8 shrink-0 rounded-lg border border-white/15 bg-black/20 py-1 text-center font-black text-white">
+      <div className="w-7 shrink-0 rounded-md border border-white/15 bg-black/20 py-0.5 text-center text-[10px] font-black text-white">
         {score ?? '-'}
       </div>
     </div>
