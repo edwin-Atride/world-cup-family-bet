@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { AppShell } from '@/components/AppShell'
-import { BracketBoard } from '@/components/BracketBoard'
+import { ClassementBracket } from '@/components/ClassementBracket'
 import { createServerSupabase } from '@/lib/supabase/server'
 import { LeaderboardRow, Match } from '@/lib/types'
 
@@ -91,16 +91,9 @@ export default async function Classement() {
         )}
       </div>
 
-      <section className="mt-8 space-y-4">
-        <div>
-          <h2 className="text-2xl font-black">📊 Tableau final en direct</h2>
-          <p className="text-white/70 text-sm mt-1">
-            Ce tableau se met à jour avec les matchs et les scores validés par l’admin.
-          </p>
-        </div>
-
+      <section className="mt-10 space-y-4">
         {(matches as Match[] | null)?.length ? (
-          <BracketBoard matches={(matches as Match[]) || []} />
+          <ClassementBracket matches={(matches as Match[]) || []} />
         ) : (
           <div className="glass rounded-3xl p-6 text-center text-white/70">
             Aucun tableau créé pour le moment.
