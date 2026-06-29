@@ -5,7 +5,13 @@ import { createBrowserSupabase } from '@/lib/supabase/browser'
 import { Match, Prediction, PredictionPick } from '@/lib/types'
 import { isLocked } from '@/lib/bracket'
 
-export function PredictionForm({ match, existing }: { match: Match; existing: Prediction | null }) {
+export function PredictionForm({
+  match,
+  existing,
+}: {
+  match: Match
+  existing: Prediction | null
+}) {
   const supabase = createBrowserSupabase()
 
   const [pick, setPick] = useState<PredictionPick>(existing?.pick || 'home')
@@ -15,10 +21,16 @@ export function PredictionForm({ match, existing }: { match: Match; existing: Pr
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const locked = isLocked(match.kickoff_at)
+  const locked = match.status !== 'upcoming' || isLocked(match.kickoff_at)
 
   async function save() {
     setMsg('')
+
+    if (locked) {
+      setMsg('🔒 Ce match est verrouillé. Le pronostic ne peut plus être modifié.')
+      return
+    }
+
     setLoading(true)
 
     const {
@@ -28,12 +40,6 @@ export function PredictionForm({ match, existing }: { match: Match; existing: Pr
     if (!user) {
       setLoading(false)
       setMsg('Connexion requise')
-      return
-    }
-
-    if (locked) {
-      setLoading(false)
-      setMsg('Ce match est verrouillé 10 minutes avant le début.')
       return
     }
 
@@ -54,48 +60,128 @@ export function PredictionForm({ match, existing }: { match: Match; existing: Pr
 
     setLoading(false)
 
-    if (error) setMsg(error.message)
-    else {
-      setMsg('Pronostic sauvegardé ✅')
-      setTimeout(() => (location.href = '/paris'), 500)
+    if (error) {
+      setMsg(error.message)
+      return
     }
+
+    setMsg('Pronostic sauvegardé ✅')
+    setTimeout(() => {
+      location.href = '/paris'
+    }, 500)
   }
 
   return (
     <div className="glass rounded-3xl p-5 space-y-5">
       <div>
-        <h2 className="text-2xl font-black text-white">Ton pronostic</h2>
-        <p className="text-white/70 text-sm mt-1">Tu peux modifier ton pronostic jusqu’à 10 minutes avant le match.</p>
+        <h2 className="text-2xl font-black text-white">
+          Ton pronostic
+        </h2>
+
+        <p className="text-white/70 text-sm mt-1">
+          Tu peux modifier ton pronostic jusqu’à 10 minutes avant le match.
+        </p>
       </div>
 
       {locked && (
-        <p className="rounded-2xl bg-red-500/20 border border-red-400/30 p-3 text-sm text-white">🔒 Ce match est verrouillé.</p>
+        <div className="rounded-2xl bg-red-500/20 border border-red-400/30 p-4 text-sm text-white">
+          <p className="font-black">🔒 Paris verrouillés</p>
+          <p className="text-white/70 mt-1">
+            Ce match est terminé ou commence dans moins de 10 minutes.
+            Ton pronostic reste visible mais il n’est plus modifiable.
+          </p>
+        </div>
       )}
 
       <div className="grid gap-3">
-        <ChoiceButton value="home" pick={pick} setPick={setPick} disabled={locked}>Victoire {match.home_team}</ChoiceButton>
-        <ChoiceButton value="draw" pick={pick} setPick={setPick} disabled={locked}>Match nul</ChoiceButton>
-        <ChoiceButton value="away" pick={pick} setPick={setPick} disabled={locked}>Victoire {match.away_team}</ChoiceButton>
+        <ChoiceButton
+          value="home"
+          pick={pick}
+          setPick={setPick}
+          disabled={locked}
+        >
+          Victoire {match.home_team}
+        </ChoiceButton>
+
+        <ChoiceButton
+          value="draw"
+          pick={pick}
+          setPick={setPick}
+          disabled={locked}
+        >
+          Match nul
+        </ChoiceButton>
+
+        <ChoiceButton
+          value="away"
+          pick={pick}
+          setPick={setPick}
+          disabled={locked}
+        >
+          Victoire {match.away_team}
+        </ChoiceButton>
       </div>
 
       <div>
-        <p className="text-sm text-white/80 mb-3 font-semibold">Score prévu</p>
+        <p className="text-sm text-white/80 mb-3 font-semibold">
+          Score prévu
+        </p>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <input disabled={locked} min="0" type="number" className="rounded-2xl px-4 py-4 bg-white text-black placeholder:text-gray-500 font-black text-center text-xl outline-none disabled:opacity-60" placeholder={match.home_team} value={home} onChange={(e) => setHome(e.target.value)} />
-          <input disabled={locked} min="0" type="number" className="rounded-2xl px-4 py-4 bg-white text-black placeholder:text-gray-500 font-black text-center text-xl outline-none disabled:opacity-60" placeholder={match.away_team} value={away} onChange={(e) => setAway(e.target.value)} />
+          <input
+            disabled={locked}
+            min="0"
+            type="number"
+            className="rounded-2xl px-4 py-4 bg-white text-black placeholder:text-gray-500 font-black text-center text-xl outline-none disabled:opacity-60"
+            placeholder={match.home_team}
+            value={home}
+            onChange={(e) => setHome(e.target.value)}
+          />
+
+          <input
+            disabled={locked}
+            min="0"
+            type="number"
+            className="rounded-2xl px-4 py-4 bg-white text-black placeholder:text-gray-500 font-black text-center text-xl outline-none disabled:opacity-60"
+            placeholder={match.away_team}
+            value={away}
+            onChange={(e) => setAway(e.target.value)}
+          />
         </div>
       </div>
 
       <label className="flex items-center gap-3 rounded-2xl bg-black/25 p-4 font-bold">
-        <input disabled={locked} type="checkbox" checked={penalties} onChange={(e) => setPenalties(e.target.checked)} />
-        {pick === 'home' ? `${match.home_team} gagne aux tirs au but` : pick === 'away' ? `${match.away_team} gagne aux tirs au but` : 'Match décidé aux tirs au but'}
+        <input
+          disabled={locked}
+          type="checkbox"
+          checked={penalties}
+          onChange={(e) => setPenalties(e.target.checked)}
+        />
+
+        {pick === 'home'
+          ? `${match.home_team} gagne aux tirs au but`
+          : pick === 'away'
+            ? `${match.away_team} gagne aux tirs au but`
+            : 'Match décidé aux tirs au but'}
       </label>
 
-      <button disabled={locked || loading} onClick={save} className="w-full rounded-2xl bg-fifaGold text-fifaBlue font-black py-4 disabled:opacity-50">
-        {loading ? 'Sauvegarde...' : 'Sauvegarder mon pronostic'}
+      <button
+        disabled={locked || loading}
+        onClick={save}
+        className="w-full rounded-2xl bg-fifaGold text-fifaBlue font-black py-4 disabled:opacity-50"
+      >
+        {locked
+          ? 'Pronostic verrouillé'
+          : loading
+            ? 'Sauvegarde...'
+            : 'Sauvegarder mon pronostic'}
       </button>
 
-      {msg && <p className="rounded-2xl bg-black/30 p-3 text-sm text-white">{msg}</p>}
+      {msg && (
+        <p className="rounded-2xl bg-black/30 p-3 text-sm text-white">
+          {msg}
+        </p>
+      )}
     </div>
   )
 }
@@ -114,12 +200,17 @@ function ChoiceButton({
   children: React.ReactNode
 }) {
   const selected = pick === value
+
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={() => setPick(value)}
-      className={`rounded-2xl border p-4 text-left font-bold transition ${selected ? 'bg-fifaGold text-fifaBlue border-fifaGold' : 'bg-white/10 text-white border-white/20'} disabled:opacity-60`}
+      className={`rounded-2xl border p-4 text-left font-bold transition ${
+        selected
+          ? 'bg-fifaGold text-fifaBlue border-fifaGold'
+          : 'bg-white/10 text-white border-white/20'
+      } disabled:opacity-60`}
     >
       {children}
     </button>
